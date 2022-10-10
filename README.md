@@ -29,7 +29,7 @@
 
 ## Requirements
 
-* A [bedrock](https://github.com/roots/bedrock) based WordPress project
+* A WordPress installation using .env for environment variables
 * SSH connection to remote server
 * [WP-CLI](https://github.com/wp-cli/wp-cli)
 * [rsync](https://rsync.samba.org)

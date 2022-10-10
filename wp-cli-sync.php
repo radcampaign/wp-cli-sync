@@ -132,7 +132,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     }
 
     // Check if WP-CLI is installed on remote server
-    $command = 'ssh -q '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"test -f '.$rem_proj_loc.'/vendor/bin/wp && echo true || echo false\""';
+    $command = 'ssh -q '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && type wp && echo true || echo false\""';
     $remote_server_check = exec($command);
 
     if ($remote_server_check == 'false') {
@@ -154,11 +154,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     $local_activated_plugins = $_ENV['LOCAL_ACTIVATED_PLUGINS'];
     $local_deactivated_plugins = $_ENV['LOCAL_DEACTIVATED_PLUGINS'];
 
-    // Move to project root
-    chdir(ABSPATH.'../../');
-
     // Activate Maintenance Mode
-    $command = ABSPATH . '/../../vendor/bin/wp maintenance-mode activate';
+    $command = 'wp maintenance-mode activate';
     exec($command);
 
     /**
@@ -175,7 +172,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
       $pipe = '|';
     }
 
-    $command = 'ssh '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && '.$rem_proj_loc.'/vendor/bin/wp db export --single-transaction -\"" '.$pipe. ' ' . ABSPATH . '/../../vendor/bin/wp db import -';
+    $command = 'ssh '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && wp db export --single-transaction -\"" '.$pipe. ' wp db import -';
     debug_message($command);
     system($command);
 
@@ -183,7 +180,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
      * TASK: Post sync queries
      */
     if ($queries = $_ENV['LOCAL_POST_SYNC_QUERIES']) {
-      $command = ABSPATH . '/../../vendor/bin/wp db query "' . preg_replace('/(`|")/i', '\\\\${1}', $queries) . '"';
+      $command = 'wp db query "' . preg_replace('/(`|")/i', '\\\\${1}', $queries) . '"';
       debug_message($command);
       system($command);
     }
@@ -223,7 +220,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     if (!empty($local_activated_plugins)) {
       task_message('Activate Plugins');
       $cleaned_arr_list = preg_replace('/[ ,]+/', ' ', trim($local_activated_plugins));
-      $command = ABSPATH . '/../../vendor/bin/wp plugin activate '.$cleaned_arr_list;
+      $command = 'wp plugin activate '.$cleaned_arr_list;
       debug_message($command);
       system($command);
     }
@@ -232,13 +229,13 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     if (!empty($local_deactivated_plugins)) {
       task_message('Deactivate Plugins');
       $cleaned_arr_list = preg_replace('/[ ,]+/', ' ', trim($local_deactivated_plugins));
-      $command = ABSPATH . '/../../vendor/bin/wp plugin deactivate '.$cleaned_arr_list;
+      $command = 'wp plugin deactivate '.$cleaned_arr_list;
       debug_message($command);
       system($command);
     }
 
     // Deactivate Maintenance Mode
-    $command = ABSPATH . '/../../vendor/bin/wp maintenance-mode deactivate';
+    $command = 'wp maintenance-mode deactivate';
     exec($command);
 
     // Completion Message
