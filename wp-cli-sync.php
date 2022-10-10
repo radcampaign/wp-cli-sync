@@ -26,7 +26,14 @@ foreach($env_variables as $env_variable) {
 
 // Define Sync Command
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
-  $sync = function() {
+  $sync = function($args) {
+
+    if ($args) {
+      $remote_environment = strtoupper($args[0]);
+      $_ENV['REMOTE_SSH_HOSTNAME'] = getenv('REMOTE_SSH_HOSTNAME_' . $remote_environment);
+      $_ENV['REMOTE_SSH_USERNAME'] = getenv('REMOTE_SSH_USERNAME_' . $remote_environment);
+      $_ENV['REMOTE_PROJECT_LOCATION'] = getenv('REMOTE_PROJECT_LOCATION_' . $remote_environment);
+    }
 
     // Task Message
     function task_message($message, $title='Task', $color = 34, $firstBreak = true) {

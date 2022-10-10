@@ -69,7 +69,15 @@ LOCAL_POST_SYNC_QUERIES=""
 
 ```
 
-3. Run `wp sync` from the project root.
+If you want to be able to sync from additional environments (e.g. a remote development site), add additional environment variables for your remote install with the suffix *`_ENVIRONMENT`*.
+
+```sh
+REMOTE_SSH_USERNAME_DEV=""
+REMOTE_SSH_HOSTNAME_DEV=""
+REMOTE_PROJECT_LOCATION=""
+```
+
+3. Run `wp sync` from the project root. If you configured additional remote environments in step 2, you can pass a single argument to sync with that environment instead. E.g. `wp sync dev`.
 
 ## First Sync
 
