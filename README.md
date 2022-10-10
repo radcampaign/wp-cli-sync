@@ -20,7 +20,7 @@
   </a>
 </p>
 
-<p align="center">A WP-CLI command for syncing a live site to a development environment</p>
+<p align="center">A WP-CLI command for syncing a remote site to a local environment</p>
 
 <p align="center">
   <img src="https://i.imgur.com/ugUhcuQ.gif" />
@@ -30,7 +30,7 @@
 ## Requirements
 
 * A [bedrock](https://github.com/roots/bedrock) based WordPress project
-* SSH connection to live server
+* SSH connection to remote server
 * [WP-CLI](https://github.com/wp-cli/wp-cli)
 * [rsync](https://rsync.samba.org)
 
@@ -46,26 +46,26 @@ composer require jonbp/wp-cli-sync
 
 ```sh
 # WP-CLI Sync Settings [wp sync]
-LIVE_SSH_USERNAME=""
-LIVE_SSH_HOSTNAME=""
+REMOTE_SSH_USERNAME=""
+REMOTE_SSH_HOSTNAME=""
 REMOTE_PROJECT_LOCATION="~/gitrepo"
 
 # Plugins should be formatted in a comma seperated format
 # For example: "plugin1,plugin2,plugin3"
 
 # Plugins activated on sync
-DEV_ACTIVATED_PLUGINS=""
+LOCAL_ACTIVATED_PLUGINS=""
 
 # Plugins deactivated on sync
-DEV_DEACTIVATED_PLUGINS=""
+LOCAL_DEACTIVATED_PLUGINS=""
 
 # Dirs to exclude from sync
 # Multiple dirs can be provided by separating with a comma
 # Use dir names or paths relative to uploads dir
-DEV_SYNC_DIR_EXCLUDES=""
+LOCAL_SYNC_DIR_EXCLUDES=""
 
 # DB Queries to run after sync
-DEV_POST_SYNC_QUERIES=""
+LOCAL_POST_SYNC_QUERIES=""
 
 ```
 

@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name:  WP-CLI Sync
-Description:  A WP-CLI command for syncing a live site to a development environment
+Description:  A WP-CLI command for syncing a remote site to a local environment
 Version:      1.3.1
 Author:       Jon Beaumont-Pike
 Author URI:   https://jonbp.co.uk/
@@ -10,14 +10,14 @@ License:      MIT License
 
 // Set Default Vars
 $env_variables = array(
-  'LIVE_SSH_HOSTNAME',
-  'LIVE_SSH_USERNAME',
+  'REMOTE_SSH_HOSTNAME',
+  'REMOTE_SSH_USERNAME',
   'REMOTE_PROJECT_LOCATION',
-  'DEV_ACTIVATED_PLUGINS',
-  'DEV_DEACTIVATED_PLUGINS',
-  'DEV_POST_SYNC_QUERIES',
-  'DEV_SYNC_DIR_EXCLUDES',
-  'DEV_TASK_DEBUG'
+  'LOCAL_ACTIVATED_PLUGINS',
+  'LOCAL_DEACTIVATED_PLUGINS',
+  'LOCAL_POST_SYNC_QUERIES',
+  'LOCAL_SYNC_DIR_EXCLUDES',
+  'LOCAL_TASK_DEBUG'
 );
 
 foreach($env_variables as $env_variable) {
@@ -38,7 +38,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
     // Debug Message
     function debug_message($message, $title='Debug', $color = 33, $firstBreak = false) {
-      if (empty($_ENV['DEV_TASK_DEBUG'])) {
+      if (empty($_ENV['LOCAL_TASK_DEBUG'])) {
         return;
       }
       if ($firstBreak == true) {
@@ -56,8 +56,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     $fail_count = 0;
 
     // Sync vars
-    $ssh_hostname = $_ENV['LIVE_SSH_HOSTNAME'];
-    $ssh_username = $_ENV['LIVE_SSH_USERNAME'];
+    $ssh_hostname = $_ENV['REMOTE_SSH_HOSTNAME'];
+    $ssh_username = $_ENV['REMOTE_SSH_USERNAME'];
     $rem_proj_loc = $_ENV['REMOTE_PROJECT_LOCATION'];
 
     // Welcome
@@ -71,7 +71,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     if (empty($ssh_hostname) || empty($ssh_username) || empty($rem_proj_loc)) {
 
       // Exit Messages
-      task_message('some/all dev sync vars are not set in .env file', 'Error', 31, false);
+      task_message('some/all local sync vars are not set in .env file', 'Error', 31, false);
 
       // Line Break + Color Reset + Exit
       lb_cr();
@@ -108,13 +108,13 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
     // Check if SSH connection works
     $command = 'ssh -q '.$ssh_username.'@'.$ssh_hostname.' exit; echo $?';
-    $live_server_status = exec($command);
+    $remote_server_status = exec($command);
 
-    if ($live_server_status == '255') {
+    if ($remote_server_status == '255') {
 
       // Exit Messages
-      task_message('Cannot connect to live server over SSH', 'Error', 31, false);
-      task_message('Check that your LIVE_SSH_HOSTNAME and LIVE_SSH_USERNAME variables are correct', 'Hint', 33);
+      task_message('Cannot connect to remote server over SSH', 'Error', 31, false);
+      task_message('Check that your REMOTE_SSH_HOSTNAME and REMOTE_SSH_USERNAME variables are correct', 'Hint', 33);
 
       // Line Break + Color Reset + Exit
       lb_cr();
@@ -122,15 +122,15 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
     }
 
-    // Check if WP-CLI is installed on live server
+    // Check if WP-CLI is installed on remote server
     $command = 'ssh -q '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"test -f '.$rem_proj_loc.'/vendor/bin/wp && echo true || echo false\""';
-    $live_server_check = exec($command);
+    $remote_server_check = exec($command);
 
-    if ($live_server_check == 'false') {
+    if ($remote_server_check == 'false') {
 
       // Exit Messages
       task_message('Connected but cannot find remote WP-CLI', 'Error', 31, false);
-      task_message('Either WP-CLI Sync is not installed on the live server or the REMOTE_PROJECT_LOCATION variable is incorrect', 'Hint', 33);
+      task_message('Either WP-CLI Sync is not installed on the remote server or the REMOTE_PROJECT_LOCATION variable is incorrect', 'Hint', 33);
 
       // Line Break + Color Reset + Exit
       lb_cr();
@@ -142,8 +142,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     task_message('Running sync...', 'Connected', 32, false);
 
     // Plugin Vars
-    $dev_activated_plugins = $_ENV['DEV_ACTIVATED_PLUGINS'];
-    $dev_deactivated_plugins = $_ENV['DEV_DEACTIVATED_PLUGINS'];
+    $local_activated_plugins = $_ENV['LOCAL_ACTIVATED_PLUGINS'];
+    $local_deactivated_plugins = $_ENV['LOCAL_DEACTIVATED_PLUGINS'];
 
     // Move to project root
     chdir(ABSPATH.'../../');
@@ -173,7 +173,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     /**
      * TASK: Post sync queries
      */
-    if ($queries = $_ENV['DEV_POST_SYNC_QUERIES']) {
+    if ($queries = $_ENV['LOCAL_POST_SYNC_QUERIES']) {
       $command = ABSPATH . '/../../vendor/bin/wp db query "' . preg_replace('/(`|")/i', '\\\\${1}', $queries) . '"';
       debug_message($command);
       system($command);
@@ -186,7 +186,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     $task_name = 'Sync Uploads Folder';
 
     $excludes  = '';
-    if ($exclude_dirs = $_ENV['DEV_SYNC_DIR_EXCLUDES']) {
+    if ($exclude_dirs = $_ENV['LOCAL_SYNC_DIR_EXCLUDES']) {
       $exclude_dirs = explode(',', $exclude_dirs);
       foreach ($exclude_dirs as $dir) {
         $excludes .= ' --exclude=' . $dir;
@@ -208,18 +208,18 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
      */
 
     // Activate Plugins
-    if (!empty($dev_activated_plugins)) {
+    if (!empty($local_activated_plugins)) {
       task_message('Activate Plugins');
-      $cleaned_arr_list = preg_replace('/[ ,]+/', ' ', trim($dev_activated_plugins));
+      $cleaned_arr_list = preg_replace('/[ ,]+/', ' ', trim($local_activated_plugins));
       $command = ABSPATH . '/../../vendor/bin/wp plugin activate '.$cleaned_arr_list;
       debug_message($command);
       system($command);
     }
 
     // Deactivate Plugins
-    if (!empty($dev_deactivated_plugins)) {
+    if (!empty($local_deactivated_plugins)) {
       task_message('Deactivate Plugins');
-      $cleaned_arr_list = preg_replace('/[ ,]+/', ' ', trim($dev_deactivated_plugins));
+      $cleaned_arr_list = preg_replace('/[ ,]+/', ' ', trim($local_deactivated_plugins));
       $command = ABSPATH . '/../../vendor/bin/wp plugin deactivate '.$cleaned_arr_list;
       debug_message($command);
       system($command);
