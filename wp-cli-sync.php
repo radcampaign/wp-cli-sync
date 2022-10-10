@@ -12,7 +12,8 @@ License:      MIT License
 $env_variables = array(
   'REMOTE_SSH_HOSTNAME',
   'REMOTE_SSH_USERNAME',
-  'REMOTE_PROJECT_LOCATION',
+  'REMOTE_PROJECT_DIR',
+  'REMOTE_UPLOAD_DIR',
   'LOCAL_ACTIVATED_PLUGINS',
   'LOCAL_DEACTIVATED_PLUGINS',
   'LOCAL_POST_SYNC_QUERIES',
@@ -32,7 +33,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
       $remote_environment = strtoupper($args[0]);
       $_ENV['REMOTE_SSH_HOSTNAME'] = getenv('REMOTE_SSH_HOSTNAME_' . $remote_environment);
       $_ENV['REMOTE_SSH_USERNAME'] = getenv('REMOTE_SSH_USERNAME_' . $remote_environment);
-      $_ENV['REMOTE_PROJECT_LOCATION'] = getenv('REMOTE_PROJECT_LOCATION_' . $remote_environment);
+      $_ENV['REMOTE_PROJECT_DIR'] = getenv('REMOTE_PROJECT_DIR_' . $remote_environment);
+      $_ENV['REMOTE_UPLOAD_DIR'] = getenv('REMOTE_PROJECT_DIR_' . $remote_environment);
     }
 
     // Task Message
@@ -65,7 +67,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     // Sync vars
     $ssh_hostname = $_ENV['REMOTE_SSH_HOSTNAME'];
     $ssh_username = $_ENV['REMOTE_SSH_USERNAME'];
-    $rem_proj_loc = $_ENV['REMOTE_PROJECT_LOCATION'];
+    $rem_proj_loc = $_ENV['REMOTE_PROJECT_DIR'];
 
     // Welcome
     task_message('Running .env file and connection checks...', 'WP-CLI Sync', 97);
@@ -90,7 +92,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     if(($rem_proj_loc[0] != '/') && ($rem_proj_loc[0] != '~')) {
 
       // Exit Messages
-      task_message('Incorrect formatting of the REMOTE_PROJECT_LOCATION variable', 'Error', 31, false);
+      task_message('Incorrect formatting of the REMOTE_PROJECT_DIR variable', 'Error', 31, false);
       task_message('Ensure that the path begins with either / or ~/', 'Hint', 33);
 
       // Line Break + Color Reset + Exit
@@ -102,7 +104,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
       if($rem_proj_loc[1] != '/') {
 
         // Exit Messages
-        task_message('Incorrect formatting of the REMOTE_PROJECT_LOCATION variable', 'Error', 31, false);
+        task_message('Incorrect formatting of the REMOTE_PROJECT_DIR variable', 'Error', 31, false);
         task_message('Ensure that the path begins with either / or ~/', 'Hint', 33);
 
         // Line Break + Color Reset + Exit
@@ -137,7 +139,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
       // Exit Messages
       task_message('Connected but cannot find remote WP-CLI', 'Error', 31, false);
-      task_message('Either WP-CLI Sync is not installed on the remote server or the REMOTE_PROJECT_LOCATION variable is incorrect', 'Hint', 33);
+      task_message('Either WP-CLI Sync is not installed on the remote server or the REMOTE_PROJECT_DIR variable is incorrect', 'Hint', 33);
 
       // Line Break + Color Reset + Exit
       lb_cr();
@@ -200,9 +202,12 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
       }
     }
 
+    $local_upload_dir = wp_get_upload_dir()['basedir'];
+    $remote_upload_dir = $_ENV['REMOTE_UPLOAD_DIR'];
+
     if (`which rsync`) {
       task_message($task_name);
-      $command = 'rsync -avhP '.$ssh_username.'@'.$ssh_hostname.':'.$rem_proj_loc.'/web/app/uploads/ ./web/app/uploads/' . $excludes;
+      $command = 'rsync -avhP '.$ssh_username.'@'.$ssh_hostname.':' . $remote_upload_dir . '/ ' . $local_upload_dir . '/' . $excludes;
       debug_message($command);
       system($command);
     } else {

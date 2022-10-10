@@ -48,7 +48,8 @@ composer require jonbp/wp-cli-sync
 # WP-CLI Sync Settings [wp sync]
 REMOTE_SSH_USERNAME=""
 REMOTE_SSH_HOSTNAME=""
-REMOTE_PROJECT_LOCATION="~/gitrepo"
+REMOTE_PROJECT_DIR="~/gitrepo" # No trailing slashes
+REMOTE_UPLOAD_DIR="~/gitrepo" # No trailing slashes
 
 # Plugins should be formatted in a comma seperated format
 # For example: "plugin1,plugin2,plugin3"
@@ -74,7 +75,8 @@ If you want to be able to sync from additional environments (e.g. a remote devel
 ```sh
 REMOTE_SSH_USERNAME_DEV=""
 REMOTE_SSH_HOSTNAME_DEV=""
-REMOTE_PROJECT_LOCATION=""
+REMOTE_PROJECT_DIR_DEV=""
+REMOTE_UPLOAD_DIR_DEV=""
 ```
 
 3. Run `wp sync` from the project root. If you configured additional remote environments in step 2, you can pass a single argument to sync with that environment instead. E.g. `wp sync dev`.
