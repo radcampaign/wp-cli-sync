@@ -51,6 +51,12 @@ REMOTE_SSH_HOSTNAME=""
 REMOTE_PROJECT_DIR="~/gitrepo" # No trailing slashes
 REMOTE_UPLOAD_DIR="~/gitrepo" # No trailing slashes
 
+If you need to specify a port for the connection, you can specify it:
+
+```sh
+REMOTE_PORT=""
+```
+
 # Plugins should be formatted in a comma seperated format
 # For example: "plugin1,plugin2,plugin3"
 

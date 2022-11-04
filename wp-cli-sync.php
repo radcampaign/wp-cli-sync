@@ -14,6 +14,7 @@ $env_variables = array(
   'REMOTE_SSH_USERNAME',
   'REMOTE_PROJECT_DIR',
   'REMOTE_UPLOAD_DIR',
+  'REMOTE_PORT',
   'LOCAL_ACTIVATED_PLUGINS',
   'LOCAL_DEACTIVATED_PLUGINS',
   'LOCAL_POST_SYNC_QUERIES',
@@ -68,6 +69,9 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     $ssh_hostname = $_ENV['REMOTE_SSH_HOSTNAME'];
     $ssh_username = $_ENV['REMOTE_SSH_USERNAME'];
     $rem_proj_loc = $_ENV['REMOTE_PROJECT_DIR'];
+    $ssh_port = $_ENV['REMOTE_PORT'] ?? false;
+    $ssh_port_command = $ssh_port ? ' -p ' . $ssh_port . ' ' : '';
+    $rsync_port_command = $ssh_port ? ' -e "ssh -p 18765" ' : '';
 
     // Welcome
     task_message('Running .env file and connection checks...', 'WP-CLI Sync', 97);
@@ -116,7 +120,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     }
 
     // Check if SSH connection works
-    $command = 'ssh -q '.$ssh_username.'@'.$ssh_hostname.' exit; echo $?';
+    $command = 'ssh ' . $ssh_port_command . ' -q '.$ssh_username.'@'.$ssh_hostname.' exit; echo $?';
     $remote_server_status = exec($command);
 
     if ($remote_server_status == '255') {
@@ -132,7 +136,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     }
 
     // Check if WP-CLI is installed on remote server
-    $command = 'ssh -q '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && type wp && echo true || echo false\""';
+    $command = 'ssh ' . $ssh_port_command. ' -q '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && type wp && echo true || echo false\""';
     $remote_server_check = exec($command);
 
     if ($remote_server_check == 'false') {
@@ -172,7 +176,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
       $pipe = '|';
     }
 
-    $command = 'ssh '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && wp db export --single-transaction -\"" '.$pipe. ' wp db import -';
+    $command = 'ssh ' . $ssh_port_command . ' ' . $ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && wp db export --single-transaction -\"" '.$pipe. ' wp db import -';
     debug_message($command);
     system($command);
 
@@ -204,7 +208,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
     if (`which rsync`) {
       task_message($task_name);
-      $command = 'rsync -avhP '.$ssh_username.'@'.$ssh_hostname.':' . $remote_upload_dir . '/ ' . $local_upload_dir . '/' . $excludes;
+      $command = 'rsync ' . $rsync_port_command . ' -avhP '.$ssh_username.'@'.$ssh_hostname.':' . $remote_upload_dir . '/ ' . $local_upload_dir . '/' . $excludes;
       debug_message($command);
       system($command);
     } else {
