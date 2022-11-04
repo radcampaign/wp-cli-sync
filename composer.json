@@ -1,5 +1,5 @@
 {
-  "name": "jonbp/wp-cli-sync",
+  "name": "radcampaign/wp-cli-sync",
   "type": "wordpress-muplugin",
   "description": "A WP-CLI command for syncing a live site to a development environment",
   "license": "MIT",
@@ -10,7 +10,7 @@
       "homepage": "https://jonbp.co.uk"
     }
   ],
-  "homepage": "https://github.com/jonbp/wp-cli-sync",
+  "homepage": "https://github.com/radcampaign/wp-cli-sync",
   "minimum-stability": "dev",
   "require": {
     "wp-cli/wp-cli": "^2.1",
