@@ -136,7 +136,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     }
 
     // Check if WP-CLI is installed on remote server
-    $command = 'ssh ' . $ssh_port_command. ' -q '.$ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && type wp && echo true || echo false\""';
+    $command = 'ssh ' . $ssh_port_command. ' -q '.$ssh_username.'@'.$ssh_hostname.' "bash -ci \"cd '.$rem_proj_loc.' && type wp && echo true || echo false\""';
     $remote_server_check = exec($command);
 
     if ($remote_server_check == 'false') {
@@ -176,7 +176,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
       $pipe = '|';
     }
 
-    $command = 'ssh ' . $ssh_port_command . ' ' . $ssh_username.'@'.$ssh_hostname.' "bash -c \"cd '.$rem_proj_loc.' && wp db export --single-transaction -\"" '.$pipe. ' wp db import -';
+    $command = 'ssh ' . $ssh_port_command . ' ' . $ssh_username.'@'.$ssh_hostname.' "bash -ci \"cd '.$rem_proj_loc.' && wp db export --single-transaction -\"" '.$pipe. ' wp db import -';
     debug_message($command);
     system($command);
 
