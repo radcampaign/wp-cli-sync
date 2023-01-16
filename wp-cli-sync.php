@@ -35,7 +35,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
       $_ENV['REMOTE_SSH_HOSTNAME'] = getenv('REMOTE_SSH_HOSTNAME_' . $remote_environment);
       $_ENV['REMOTE_SSH_USERNAME'] = getenv('REMOTE_SSH_USERNAME_' . $remote_environment);
       $_ENV['REMOTE_PROJECT_DIR'] = getenv('REMOTE_PROJECT_DIR_' . $remote_environment);
-      $_ENV['REMOTE_UPLOAD_DIR'] = getenv('REMOTE_PROJECT_DIR_' . $remote_environment);
+      $_ENV['REMOTE_UPLOAD_DIR'] = getenv('REMOTE_UPLOAD_DIR_' . $remote_environment);
     }
 
     // Task Message
