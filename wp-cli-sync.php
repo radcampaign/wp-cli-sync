@@ -69,9 +69,6 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     $ssh_hostname = $_ENV['REMOTE_SSH_HOSTNAME'];
     $ssh_username = $_ENV['REMOTE_SSH_USERNAME'];
     $rem_proj_loc = $_ENV['REMOTE_PROJECT_DIR'];
-    $ssh_port = $_ENV['REMOTE_PORT'] ?? false;
-    $ssh_port_command = $ssh_port ? ' -p ' . $ssh_port . ' ' : '';
-    $rsync_port_command = $ssh_port ? ' -e "ssh -p 18765" ' : '';
 
     // Welcome
     task_message('Running .env file and connection checks...', 'WP-CLI Sync', 97);
@@ -80,11 +77,22 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
      * BEGIN VAR / CONNECTION CHECKS
      */
 
-    // Exit if some vars missing
     if (empty($ssh_hostname) || empty($ssh_username) || empty($rem_proj_loc)) {
+      $message = 'Missing vars in .env: ';
+      $missing = [];
+      foreach([
+        'REMOTE_SSH_HOSTNAME' => $ssh_hostname,
+        'REMOTE_SSH_USERNAME' => $ssh_username,
+        'REMOTE_PROJECT_DIR' => $rem_proj_loc,
+      ] as $env_name => $env_value) {
+        if (empty($env_value)) {
+          $missing[] = $env_name;
+        }
+      }
+      $message .= implode(', ', $missing);
 
       // Exit Messages
-      task_message('some/all local sync vars are not set in .env file', 'Error', 31, false);
+      task_message($message, 'Error', 31, false);
 
       // Line Break + Color Reset + Exit
       lb_cr();
@@ -93,7 +101,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     }
 
     // Check if Remote location formatted correctly
-    if(($rem_proj_loc[0] != '/') && ($rem_proj_loc[0] != '~')) {
+    if(preg_match('/^~?\//', $rem_proj_loc)) {
 
       // Exit Messages
       task_message('Incorrect formatting of the REMOTE_PROJECT_DIR variable', 'Error', 31, false);
@@ -103,21 +111,11 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
       lb_cr();
       exit();
 
-    } elseif($rem_proj_loc[0] == '~') {
-
-      if($rem_proj_loc[1] != '/') {
-
-        // Exit Messages
-        task_message('Incorrect formatting of the REMOTE_PROJECT_DIR variable', 'Error', 31, false);
-        task_message('Ensure that the path begins with either / or ~/', 'Hint', 33);
-
-        // Line Break + Color Reset + Exit
-        lb_cr();
-        exit();
-
-      }
-
     }
+
+    $ssh_port = $_ENV['REMOTE_PORT'] ?? false;
+    $ssh_port_command = $ssh_port ? ' -p ' . $ssh_port . ' ' : '';
+    $rsync_port_command = $ssh_port ? ' -e "ssh -p 18765" ' : '';
 
     // Check if SSH connection works
     $command = 'ssh ' . $ssh_port_command . ' -q '.$ssh_username.'@'.$ssh_hostname.' exit; echo $?';
