@@ -101,7 +101,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     }
 
     // Check if Remote location formatted correctly
-    if(preg_match('/^~?\//', $rem_proj_loc)) {
+    if(!preg_match('/^~?\//', $rem_proj_loc)) {
 
       // Exit Messages
       task_message('Incorrect formatting of the REMOTE_PROJECT_DIR variable', 'Error', 31, false);
